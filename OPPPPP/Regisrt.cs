@@ -25,7 +25,7 @@ namespace OPPPPP
         private void buttonReg_Click(object sender, EventArgs e)
         {
             DBManager dB = new DBManager();
-            if (dB.AddNewUser("C:\\db 7322 opp.db", Login.Text, Password.Text))
+            if (dB.AddNewUser("C:\\db 7322 opp.db", textBoxLog.Text, textBoxPass.Text))
             {
                 MessageBox.Show("Успешно");
             }

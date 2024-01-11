@@ -33,7 +33,7 @@ namespace OPPPPP
             }
             return false;
         }
-        public bool AuthUser (string bd, string username, string password) 
+        public bool AuthUser (string db, string username, string password) 
         {
             SQLiteConnection conn = new SQLiteConnection("Data Source=" + db);
             conn.Open();
