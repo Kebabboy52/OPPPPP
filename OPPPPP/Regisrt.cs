@@ -24,6 +24,11 @@ namespace OPPPPP
 
         private void buttonReg_Click(object sender, EventArgs e)
         {
+           
+        }
+
+        private void buttonEnter_Click(object sender, EventArgs e)
+        {
             DBManager dB = new DBManager();
             if (dB.AddNewUser("C:\\db 7322 opp.db", textBoxLog.Text, textBoxPass.Text))
             {
@@ -33,6 +38,11 @@ namespace OPPPPP
             {
                 MessageBox.Show("Провал");
             }
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
