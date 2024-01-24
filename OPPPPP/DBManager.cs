@@ -6,49 +6,109 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Data.SQLite;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Xml.Linq;
+using System.Data.SqlClient;
 
 namespace OPPPPP
 {
-    public class DBManager
+    public class DBManager:IDisposable
     {
-        public bool AddNewUser(string db,string username, string password)
+        SQLiteConnection conn;
+        public DBManager(string path)
         {
-            SQLiteConnection conn = new SQLiteConnection("Data Source=" + db);
+            //conn = new SQLiteConnection(string.Format("Data Source={0}", path));
+            conn = new SQLiteConnection("Data Source = " + path);
             conn.Open();
-            if (conn.State== System.Data.ConnectionState.Open)
+
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                try 
-                { 
+                if (conn != null)
+                {
+                    if (conn.State == System.Data.ConnectionState.Open)
+                    {
+                        conn.Close();
+                    }
+                    conn.Dispose();
+                    conn = null;
+                }
+            }
+        }
+        ~DBManager()
+        {
+            if (conn.State == System.Data.ConnectionState.Open)
+            {
+                conn.Dispose();
+
+            }
+        }
+        private string getHash(string text)
+        {
+            SHA256 sha256 = SHA256.Create();
+            byte[] raw_string = Encoding.Unicode.GetBytes(text);
+            byte[] raw_hash = sha256.ComputeHash(raw_string);
+            string hash = Encoding.Unicode.GetString(raw_hash);
+            sha256.Clear();
+            return hash;
+        }
+
+        public bool AddUser(string username, string password)
+        {
+            
+            if (conn.State == System.Data.ConnectionState.Open)
+            {
+                try
+                {
                     SQLiteCommand command = conn.CreateCommand();
-                    command.CommandText = "INSERT INTO users VALUES('" + username + "', '" + password + "')";
-                        command.ExecuteNonQuery();
-                        conn.Dispose();
-                        return true;
-                } 
+                    command.CommandText = "INSERT INTO users VALUES('" + username + "', '" + getHash(password) + "')";
+                    command.ExecuteNonQuery();
+                    
+                    return true;
+                }
                 catch (Exception exp)
                 {
                     MessageBox.Show(exp.Message);
-                    conn.Dispose ();
+                    
+                    return false;
                 }
             }
             return false;
         }
-        public bool AuthUser (string db, string username, string password) 
+        public bool AuthUser(string username, string password)
         {
-            SQLiteConnection conn = new SQLiteConnection("Data Source=" + db);
-            conn.Open();
-            if (conn.State == System.Data.ConnectionState.Open) { }
-                return false;
+
+            if (conn.State == System.Data.ConnectionState.Open)
+            {
+                try
+                {
+                    SQLiteCommand command = conn.CreateCommand();
+
+                    command.CommandText = "SELECT * FROM users Where Login='" + username + "' and password='" + getHash(password) + "'";
+                    object result = command.ExecuteScalar();
+
+                    if (result == null)
+                        return false;
+                    else
+                        return true;
+                }
+                catch (Exception exp)
+                {
+                    MessageBox.Show(exp.Message);
+
+                    return false;
+                }
+            }
+            return false;
         }
-
-
-
-
-
-
-
-
-
-
+        
     }
 }
